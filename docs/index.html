@@ -1,57 +1,97 @@
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 多模态分析</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>AI Analysis Tool for Journalists</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: auto;
+        }
+        .upload-box {
+            border: 2px dashed #007BFF;
+            padding: 20px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            background: #eef6ff;
+        }
+        .upload-box:hover {
+            background: #d9eaff;
+        }
+        .visualization-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .visualization {
+            width: 30%;
+            min-height: 200px;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>AI 多模态分析</h1>
-
-    <!-- 上传文件部分 -->
-    <div class="upload-section">
-        <h3>文本分析</h3>
-        <input type="file" id="textFile">
-        <button onclick="uploadFile('text')">上传文本</button>
-    </div>
-
-    <div class="upload-section">
-        <h3>音频分析</h3>
-        <input type="file" id="audioFile">
-        <button onclick="uploadFile('audio')">上传音频</button>
-    </div>
-
-    <div class="upload-section">
-        <h3>视频分析</h3>
-        <input type="file" id="videoFile">
-        <button onclick="uploadFile('video')">上传视频</button>
-    </div>
-
-    <!-- 结果展示 -->
-    <div id="result">
-        <h2>分析结果</h2>
-        <p><strong>分析类型:</strong> <span id="analysisType">N/A</span></p>
-        <p><strong>Xenophobia 评分:</strong> <span id="score">N/A</span></p>
+    <div class="container">
+        <h2>AI ANALYSIS TOOL FOR JOURNALISTS</h2>
         
-        <!-- 进度条 -->
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
+        <label for="fileInput" class="upload-box" id="uploadBox">
+            <span>Drop your file here or click to select...</span>
+            <input type="file" id="fileInput" class="hidden" />
+        </label>
+        <button class="btn" onclick="uploadFile()">Upload</button>
+
+        <h3>Analysis Results</h3>
+        <div class="visualization-container">
+            <div class="visualization" id="wordCloud">WORD CLOUD</div>
+            <div class="visualization" id="sentiment">Sentiment Distribution</div>
+            <div class="visualization" id="keywordNetwork">Keyword Network</div>
         </div>
-
-        <p><strong>关键词:</strong> <span id="keywords"></span></p>
-
-        <!-- 关键词条形图 -->
-        <canvas id="keywordsChart"></canvas>
-
-        <p><strong>情感分析:</strong> <span id="sentiment"></span></p>
-
-        <!-- 情感分析饼图 -->
-        <canvas id="sentimentChart"></canvas>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('uploadBox').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+
+        function uploadFile() {
+            let file = document.getElementById("fileInput").files[0];
+            if (!file) {
+                alert("Please select a file first.");
+                return;
+            }
+            alert("File uploaded: " + file.name);
+            // Here you can add the logic to send the file to the backend API
+        }
+    </script>
 </body>
 </html>
