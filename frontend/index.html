@@ -1,0 +1,57 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 多模态分析</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>AI 多模态分析</h1>
+
+    <!-- 上传文件部分 -->
+    <div class="upload-section">
+        <h3>文本分析</h3>
+        <input type="file" id="textFile">
+        <button onclick="uploadFile('text')">上传文本</button>
+    </div>
+
+    <div class="upload-section">
+        <h3>音频分析</h3>
+        <input type="file" id="audioFile">
+        <button onclick="uploadFile('audio')">上传音频</button>
+    </div>
+
+    <div class="upload-section">
+        <h3>视频分析</h3>
+        <input type="file" id="videoFile">
+        <button onclick="uploadFile('video')">上传视频</button>
+    </div>
+
+    <!-- 结果展示 -->
+    <div id="result">
+        <h2>分析结果</h2>
+        <p><strong>分析类型:</strong> <span id="analysisType">N/A</span></p>
+        <p><strong>Xenophobia 评分:</strong> <span id="score">N/A</span></p>
+        
+        <!-- 进度条 -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <p><strong>关键词:</strong> <span id="keywords"></span></p>
+
+        <!-- 关键词条形图 -->
+        <canvas id="keywordsChart"></canvas>
+
+        <p><strong>情感分析:</strong> <span id="sentiment"></span></p>
+
+        <!-- 情感分析饼图 -->
+        <canvas id="sentimentChart"></canvas>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
