@@ -4,13 +4,13 @@ function uploadFile(type) {
 
     if (type === "text") {
         fileInput = document.getElementById("textFile").files[0];
-        apiUrl = "http://127.0.0.1:5000/upload_text";
+        apiUrl = "https://unicc-nyu-siyige.onrender.com/upload_text";
     } else if (type === "audio") {
         fileInput = document.getElementById("audioFile").files[0];
-        apiUrl = "http://127.0.0.1:5000/upload_audio";
+        apiUrl = "https://unicc-nyu-siyige.onrender.com/upload_text";
     } else if (type === "video") {
         fileInput = document.getElementById("videoFile").files[0];
-        apiUrl = "http://127.0.0.1:5000/upload_video";
+        apiUrl = "https://unicc-nyu-siyige.onrender.com/upload_text";
     }
 
     if (!fileInput) {
