@@ -4,7 +4,7 @@ let apiData = null; // 存储 API 返回的数据
 
 function uploadFile() {
     let formData = new FormData();
-    let fileInput = document.getElementById("textFile").files[0];
+    let fileInput = document.getElementById("fileInput").files[0];
 
     if (!fileInput) {
         alert("请先选择一个文件！");
