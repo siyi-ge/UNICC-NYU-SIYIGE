@@ -43,20 +43,25 @@ function uploadFile() {
 }
 
 // 🔹 词云
+// 确保关键词数据正确处理
 function renderWordCloud(keywords) {
-    let container = document.getElementById("wordCloud");
-    if (!container) return;
-    container.innerHTML = "<h3>词云</h3>";
+    if (!keywords || keywords.length === 0) {
+        console.error("词云数据为空");
+        return;
+    }
+
+    let wordCloudContainer = document.getElementById("wordCloud");
+    wordCloudContainer.innerHTML = "<h3>关键词云</h3>";
 
     let wordCloudData = keywords.map(word => ({ text: word, size: Math.random() * 40 + 10 }));
 
     let svg = d3.select("#wordCloud")
         .append("svg")
-        .attr("width", 300)
-        .attr("height", 200);
+        .attr("width", 400)
+        .attr("height", 250);
 
     let layout = d3.layout.cloud()
-        .size([300, 200])
+        .size([400, 250])
         .words(wordCloudData)
         .padding(5)
         .rotate(() => 0)
@@ -67,7 +72,7 @@ function renderWordCloud(keywords) {
 
     function draw(words) {
         svg.append("g")
-            .attr("transform", "translate(150,100)")
+            .attr("transform", "translate(200,125)")
             .selectAll("text")
             .data(words)
             .enter().append("text")
@@ -78,6 +83,7 @@ function renderWordCloud(keywords) {
             .text(d => d.text);
     }
 }
+
 
 // 🔹 情感分析
 function renderSentimentDistribution(sentiment) {
