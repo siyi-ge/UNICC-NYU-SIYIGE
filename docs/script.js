@@ -1,16 +1,23 @@
-document.getElementById("fileInput").addEventListener("change", uploadFile);
+document.addEventListener("DOMContentLoaded", function () {
+    let uploadBtn = document.querySelector("button");
+    if (uploadBtn) {
+        uploadBtn.addEventListener("click", uploadFile);
+    } else {
+        console.error("Error: Upload button not found!");
+    }
+});
 
-let apiData = null; // 存储 API 返回的数据
+let apiData = null;
 
 function uploadFile() {
-    let formData = new FormData();
-    let fileInput = document.getElementById("fileInput").files[0];
-
-    if (!fileInput) {
+    let fileInputElement = document.getElementById("fileInput");
+    if (!fileInputElement || !fileInputElement.files.length) {
         alert("请先选择一个文件！");
         return;
     }
-    
+
+    let fileInput = fileInputElement.files[0];
+    let formData = new FormData();
     formData.append("file", fileInput);
 
     fetch("https://unicc-nyu-siyige.onrender.com/upload_text", {
@@ -20,9 +27,11 @@ function uploadFile() {
     .then(response => response.json())
     .then(data => {
         console.log("API 返回的数据:", data);
-        apiData = data;  // 存储数据到全局变量
+        if (!data || !data.keywords) {
+            throw new Error("API 返回的数据无效");
+        }
+        apiData = data;
 
-        // 渲染可视化图表
         renderWordCloud(data.keywords);
         renderSentimentDistribution(data.sentiment);
         renderKeywordNetwork(data.keywords);
@@ -33,9 +42,10 @@ function uploadFile() {
     });
 }
 
-// 词云
+// 词云可视化
 function renderWordCloud(keywords) {
     let wordCloudContainer = document.getElementById("wordCloud");
+    if (!wordCloudContainer) return;
     wordCloudContainer.innerHTML = ""; // 清空旧内容
 
     let wordCloudData = keywords.map(word => ({ text: word, size: Math.random() * 40 + 10 }));
@@ -72,7 +82,8 @@ function renderWordCloud(keywords) {
 // 情感分布
 function renderSentimentDistribution(sentiment) {
     let sentimentContainer = document.getElementById("sentimentChart");
-    sentimentContainer.innerHTML = ""; // 清空旧内容
+    if (!sentimentContainer) return;
+    sentimentContainer.innerHTML = "";
 
     let data = [
         { sentiment: "Positive", value: sentiment === "positive" ? 1 : 0 },
@@ -103,7 +114,8 @@ function renderSentimentDistribution(sentiment) {
 // 关键词网络
 function renderKeywordNetwork(keywords) {
     let networkContainer = document.getElementById("keywordNetwork");
-    networkContainer.innerHTML = ""; // 清空旧内容
+    if (!networkContainer) return;
+    networkContainer.innerHTML = "";
 
     let nodes = keywords.map((word, i) => ({ id: word, group: i % 3 }));
     let links = keywords.slice(1).map((word, i) => ({ source: keywords[i], target: word }));
@@ -150,7 +162,6 @@ function renderKeywordNetwork(keywords) {
     });
 
     function dragStart(event, d) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
         d.fy = d.y;
     }
@@ -161,7 +172,6 @@ function renderKeywordNetwork(keywords) {
     }
 
     function dragEnd(event, d) {
-        if (!event.active) simulation.alphaTarget(0);
         d.fx = null;
         d.fy = null;
     }
