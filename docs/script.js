@@ -3,11 +3,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (uploadBtn) {
         uploadBtn.addEventListener("click", uploadFile);
     } else {
-        console.error("❌ Error: Upload button not found!");
+        console.error("Error: Upload button not found!");
     }
 });
 
-let apiData = null; // 存储 API 返回数据
+let apiData = null; // 全局变量存储 API 返回的数据
 
 function uploadFile() {
     let fileInputElement = document.getElementById("fileInput");
@@ -16,11 +16,9 @@ function uploadFile() {
         return;
     }
 
-    let fileInput = fileInputElement.files[0];
+    let file = fileInputElement.files[0];
     let formData = new FormData();
-    formData.append("file", fileInput);
-
-    console.log("📤 正在上传文件:", fileInput.name);
+    formData.append("file", file);
 
     fetch("https://unicc-nyu-siyige.onrender.com/upload_text", {
         method: "POST",
@@ -28,12 +26,10 @@ function uploadFile() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("✅ API 返回的数据:", data);
-
+        console.log("完整的 API 返回数据:", data);
         if (!data || !data.keywords) {
-            throw new Error("⚠ API 返回的数据无效");
+            throw new Error("API 返回的数据无效");
         }
-
         apiData = data;
 
         renderWordCloud(data.keywords);
@@ -41,16 +37,16 @@ function uploadFile() {
         renderKeywordNetwork(data.keywords);
     })
     .catch(error => {
-        console.error("❌ API 请求失败:", error);
+        console.error("API 请求失败:", error);
         alert("API 请求失败，请检查控制台日志");
     });
 }
 
-// 📌 词云可视化
+// 🔹 词云
 function renderWordCloud(keywords) {
-    let wordCloudContainer = document.getElementById("wordCloud");
-    if (!wordCloudContainer) return;
-    wordCloudContainer.innerHTML = ""; // 清空旧内容
+    let container = document.getElementById("wordCloud");
+    if (!container) return;
+    container.innerHTML = "<h3>词云</h3>";
 
     let wordCloudData = keywords.map(word => ({ text: word, size: Math.random() * 40 + 10 }));
 
@@ -83,11 +79,11 @@ function renderWordCloud(keywords) {
     }
 }
 
-// 📌 情感分布
+// 🔹 情感分析
 function renderSentimentDistribution(sentiment) {
-    let sentimentContainer = document.getElementById("sentimentChart");
-    if (!sentimentContainer) return;
-    sentimentContainer.innerHTML = "";
+    let container = document.getElementById("sentimentChart");
+    if (!container) return;
+    container.innerHTML = "<h3>情感分析</h3>";
 
     let data = [
         { sentiment: "Positive", value: sentiment === "positive" ? 1 : 0 },
@@ -115,11 +111,11 @@ function renderSentimentDistribution(sentiment) {
         .attr("fill", d => color(d.data.sentiment));
 }
 
-// 📌 关键词网络
+// 🔹 关键词网络
 function renderKeywordNetwork(keywords) {
-    let networkContainer = document.getElementById("keywordNetwork");
-    if (!networkContainer) return;
-    networkContainer.innerHTML = "";
+    let container = document.getElementById("keywordNetwork");
+    if (!container) return;
+    container.innerHTML = "<h3>关键词网络</h3>";
 
     let nodes = keywords.map((word, i) => ({ id: word, group: i % 3 }));
     let links = keywords.slice(1).map((word, i) => ({ source: keywords[i], target: word }));

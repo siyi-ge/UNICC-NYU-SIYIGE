@@ -3,29 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Text Analysis</title>
-
-    <!-- D3.js 及词云库 -->
+    <title>AI 文本分析工具</title>
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
-
     <script src="script.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .visualization {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .chart {
+            width: 30%;
+            min-width: 300px;
+            height: 300px;
+            border: 1px solid #ddd;
+            margin: 10px;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>AI 文本分析工具</h1>
-
-    <div class="upload-container">
+    <div class="container">
         <input type="file" id="fileInput">
         <button id="uploadBtn">Upload</button>
     </div>
-
-    <h2>词云</h2>
-    <div id="wordCloud"></div>
-
-    <h2>情感分布</h2>
-    <div id="sentimentChart"></div>
-
-    <h2>关键词网络</h2>
-    <div id="keywordNetwork"></div>
+    <div class="visualization">
+        <div id="wordCloud" class="chart"><h3>词云</h3></div>
+        <div id="sentimentChart" class="chart"><h3>情感分析</h3></div>
+        <div id="keywordNetwork" class="chart"><h3>关键词网络</h3></div>
+    </div>
 </body>
 </html>
