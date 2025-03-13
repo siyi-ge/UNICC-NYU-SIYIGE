@@ -1,79 +1,95 @@
-function uploadFile(type) {
-    let fileInput;
-    let apiUrl;
+const API_URL = "https://unicc-nyu-siyige.onrender.com/upload_text";
 
-    if (type === "text") {
-        fileInput = document.getElementById("textFile").files[0];
-        apiUrl = "https://unicc-nyu-siyige.onrender.com/upload_text";
-    } else if (type === "audio") {
-        fileInput = document.getElementById("audioFile").files[0];
-        apiUrl = "https://unicc-nyu-siyige.onrender.com/upload_text";
-    } else if (type === "video") {
-        fileInput = document.getElementById("videoFile").files[0];
-        apiUrl = "https://unicc-nyu-siyige.onrender.com/upload_text";
-    }
-
-    if (!fileInput) {
+function uploadFile() {
+    let fileInput = document.getElementById("fileInput");
+    let file = fileInput.files[0];
+    if (!file) {
         alert("请选择一个文件");
         return;
     }
 
     let formData = new FormData();
-    formData.append("file", fileInput);
+    formData.append("file", file);
 
-    fetch(apiUrl, {
+    fetch(API_URL, {
         method: "POST",
         body: formData
     })
     .then(response => response.json())
     .then(data => {
-        document.getElementById("analysisType").innerText = type.toUpperCase();
-        document.getElementById("score").innerText = data.xenophobia_score;
-        document.getElementById("keywords").innerText = data.keywords.join(", ");
-        document.getElementById("sentiment").innerText = data.sentiment;
-
-        updateProgressBar(data.xenophobia_score);
-        updateKeywordsChart(data.keywords);
-        updateSentimentChart(data.sentiment);
+        renderWordCloud(data.keywords);
+        renderSentimentChart(data.sentiment);
+        renderKeywordNetwork(data.keyword_network);
+        renderSourceTrend(data.time_series);
+        renderMediaActivity(data.source_distribution);
     })
     .catch(error => console.error("Error:", error));
 }
 
-// 更新进度条
-function updateProgressBar(score) {
-    let progressBar = document.getElementById("progressBar");
-    progressBar.style.width = (score * 10) + "%";
-    progressBar.innerText = score;
+// 1️⃣ 词云
+function renderWordCloud(keywords) {
+    let chart = echarts.init(document.getElementById("wordCloud"));
+    let data = keywords.map(word => ({ name: word, value: Math.random() * 100 }));
+    
+    let option = {
+        series: [{
+            type: 'wordCloud',
+            data: data
+        }]
+    };
+    chart.setOption(option);
 }
 
-// 更新关键词条形图
-function updateKeywordsChart(keywords) {
-    let ctx = document.getElementById("keywordsChart").getContext("2d");
-    new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: keywords,
-            datasets: [{
-                label: "关键词权重",
-                data: keywords.map(() => Math.random() * 10), // 模拟权重
-                backgroundColor: "rgba(54, 162, 235, 0.6)"
-            }]
-        }
-    });
+// 2️⃣ 情感分布（饼图）
+function renderSentimentChart(sentiment) {
+    let chart = echarts.init(document.getElementById("sentimentChart"));
+    let option = {
+        series: [{
+            type: 'pie',
+            data: [
+                { value: sentiment.positive, name: "Positive" },
+                { value: sentiment.negative, name: "Negative" },
+                { value: sentiment.neutral, name: "Neutral" }
+            ]
+        }]
+    };
+    chart.setOption(option);
 }
 
-// 更新情感分析饼图
-function updateSentimentChart(sentiment) {
-    let ctx = document.getElementById("sentimentChart").getContext("2d");
-    new Chart(ctx, {
-        type: "pie",
-        data: {
-            labels: ["Positive", "Neutral", "Negative"],
-            datasets: [{
-                data: sentiment === "positive" ? [70, 20, 10] :
-                      sentiment === "neutral" ? [30, 50, 20] : [10, 20, 70],
-                backgroundColor: ["green", "gray", "red"]
-            }]
-        }
-    });
+// 3️⃣ 关键词网络（模拟数据）
+function renderKeywordNetwork(data) {
+    let chart = echarts.init(document.getElementById("keywordNetwork"));
+    let option = {
+        series: [{
+            type: 'graph',
+            layout: 'force',
+            nodes: data.nodes,
+            links: data.links
+        }]
+    };
+    chart.setOption(option);
+}
+
+// 4️⃣ 信息来源趋势（折线图）
+function renderSourceTrend(data) {
+    let chart = echarts.init(document.getElementById("sourceTrend"));
+    let option = {
+        xAxis: { type: 'category', data: data.dates },
+        yAxis: { type: 'value' },
+        series: [{ type: 'line', data: data.values }]
+    };
+    chart.setOption(option);
+}
+
+// 5️⃣ 媒体活跃度（环形图）
+function renderMediaActivity(data) {
+    let chart = echarts.init(document.getElementById("mediaActivity"));
+    let option = {
+        series: [{
+            type: 'pie',
+            radius: ['40%', '70%'],
+            data: data
+        }]
+    };
+    chart.setOption(option);
 }

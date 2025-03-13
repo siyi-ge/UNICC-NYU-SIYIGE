@@ -1,51 +1,29 @@
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    background-color: #f4f4f4;
+    background-color: #f5f5f5;
 }
 
-.upload-section {
-    margin: 20px auto;
+.upload-container {
+    margin: 20px;
+}
+
+.chart-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.chart-box {
+    width: 45%;
+    background: white;
+    margin: 10px;
     padding: 10px;
-    background: white;
-    border-radius: 5px;
+    border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 40%;
 }
 
-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-.progress-container {
+#wordCloud, #sentimentChart, #keywordNetwork, #sourceTrend, #mediaActivity {
     width: 100%;
-    background-color: #ddd;
-    border-radius: 5px;
-    margin: 10px 0;
-}
-
-.progress-bar {
-    height: 20px;
-    width: 0%;
-    background-color: #4caf50;
-    text-align: center;
-    color: white;
-    border-radius: 5px;
-}
-
-#result {
-    width: 50%;
-    margin: auto;
-    background: white;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    height: 300px;
 }
