@@ -1,30 +1,40 @@
 const API_URL = "https://unicc-nyu-siyige.onrender.com/upload_text";
 
-function uploadFile() {
-    let fileInput = document.getElementById("fileInput");
-    let file = fileInput.files[0];
-    if (!file) {
+function uploadFile(type) {
+    let fileInput = document.getElementById("textFile").files[0];
+    let apiUrl = "http://127.0.0.1:5000/upload_text";  // 本地 Flask API
+
+    if (!fileInput) {
         alert("请选择一个文件");
         return;
     }
 
     let formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", fileInput);
 
-    fetch(API_URL, {
+    fetch(apiUrl, {
         method: "POST",
         body: formData
     })
     .then(response => response.json())
     .then(data => {
-        renderWordCloud(data.keywords);
-        renderSentimentChart(data.sentiment);
-        renderKeywordNetwork(data.keyword_network);
-        renderSourceTrend(data.time_series);
-        renderMediaActivity(data.source_distribution);
+        console.log("API 返回的数据:", data);
+
+        // 处理 Unicode 编码问题
+        let decodedKeywords = data.keywords.map(keyword => decodeURIComponent(escape(keyword)));
+
+        // 在 HTML 页面上显示结果
+        document.getElementById("analysisType").innerText = type.toUpperCase();
+        document.getElementById("score").innerText = data.xenophobia_score;
+        document.getElementById("keywords").innerText = decodedKeywords.join(", ");
+        document.getElementById("sentiment").innerText = data.sentiment;
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => {
+        console.error("发生错误:", error);
+        alert("分析失败，请重试");
+    });
 }
+
 
 // 1️⃣ 词云
 function renderWordCloud(keywords) {
@@ -93,3 +103,5 @@ function renderMediaActivity(data) {
     };
     chart.setOption(option);
 }
+
+
