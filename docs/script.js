@@ -1,13 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
-    let uploadBtn = document.querySelector("button");
+    let uploadBtn = document.getElementById("uploadBtn");
     if (uploadBtn) {
         uploadBtn.addEventListener("click", uploadFile);
     } else {
-        console.error("Error: Upload button not found!");
+        console.error("❌ Error: Upload button not found!");
     }
 });
 
-let apiData = null;
+let apiData = null; // 存储 API 返回数据
 
 function uploadFile() {
     let fileInputElement = document.getElementById("fileInput");
@@ -20,16 +20,20 @@ function uploadFile() {
     let formData = new FormData();
     formData.append("file", fileInput);
 
+    console.log("📤 正在上传文件:", fileInput.name);
+
     fetch("https://unicc-nyu-siyige.onrender.com/upload_text", {
         method: "POST",
         body: formData
     })
     .then(response => response.json())
     .then(data => {
-        console.log("API 返回的数据:", data);
+        console.log("✅ API 返回的数据:", data);
+
         if (!data || !data.keywords) {
-            throw new Error("API 返回的数据无效");
+            throw new Error("⚠ API 返回的数据无效");
         }
+
         apiData = data;
 
         renderWordCloud(data.keywords);
@@ -37,12 +41,12 @@ function uploadFile() {
         renderKeywordNetwork(data.keywords);
     })
     .catch(error => {
-        console.error("API 请求失败:", error);
+        console.error("❌ API 请求失败:", error);
         alert("API 请求失败，请检查控制台日志");
     });
 }
 
-// 词云可视化
+// 📌 词云可视化
 function renderWordCloud(keywords) {
     let wordCloudContainer = document.getElementById("wordCloud");
     if (!wordCloudContainer) return;
@@ -79,7 +83,7 @@ function renderWordCloud(keywords) {
     }
 }
 
-// 情感分布
+// 📌 情感分布
 function renderSentimentDistribution(sentiment) {
     let sentimentContainer = document.getElementById("sentimentChart");
     if (!sentimentContainer) return;
@@ -111,7 +115,7 @@ function renderSentimentDistribution(sentiment) {
         .attr("fill", d => color(d.data.sentiment));
 }
 
-// 关键词网络
+// 📌 关键词网络
 function renderKeywordNetwork(keywords) {
     let networkContainer = document.getElementById("keywordNetwork");
     if (!networkContainer) return;
