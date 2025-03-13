@@ -1,4 +1,4 @@
-document.getElementById("uploadBtn").addEventListener("click", uploadFile);
+document.getElementById("fileInput").addEventListener("change", uploadFile);
 
 let apiData = null; // 存储 API 返回的数据
 
