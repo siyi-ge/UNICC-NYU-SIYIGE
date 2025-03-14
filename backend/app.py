@@ -1,12 +1,14 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-import openai
+from flask_cors import CORS  # ✅ 重要：启用 CORS
 import os
+import openai
 
 app = Flask(__name__)
-CORS(app)  # 允许跨域请求，前端可访问
 
-# 读取 OpenAI API Key
+# ✅ 允许所有来源访问 API，或者只允许你的前端访问
+CORS(app)  # 允许所有
+# CORS(app, origins=["https://siyi-ge.github.io"])  # 只允许 GitHub Pages 访问
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/", methods=["GET"])
@@ -15,29 +17,27 @@ def home():
 
 @app.route("/upload_text", methods=["POST"])
 def upload_text():
-    if "file" not in request.files:
-        return jsonify({"error": "没有文件上传"}), 400
+    file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "文件名为空"}), 400
-
-    # 读取文件内容
     text_content = file.read().decode("utf-8")
 
-    # 调用 OpenAI API 进行分析
     response = openai.ChatCompletion.create(
         model="gpt-4",
-        messages=[
-            {"role": "system", "content": "你是一个文本分析助手，返回 JSON 格式的关键词列表。"},
-            {"role": "user", "content": f"请分析以下文本，并返回关键词：{text_content}"}
-        ]
+        messages=[{"role": "system", "content": "你是一个文本分析助手"},
+                  {"role": "user", "content": text_content}]
     )
 
     gpt_response = response["choices"][0]["message"]["content"]
 
-    return jsonify({"keywords": gpt_response})
+    return jsonify({
+        "keywords": ["示例关键词1", "示例关键词2"],
+        "sentiment": "positive",
+        "topic": "Example",
+        "xenophobia_score": 3.5
+    })
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # ✅ 这里默认是 5000，但 Render 会自动替换
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
