@@ -4,7 +4,8 @@ import openai
 import os
 
 app = Flask(__name__)
-CORS(app)  # 允许跨域请求
+# 使用更详细的CORS配置
+CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization"]}})
 
 # 读取 OpenAI API Key
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -13,8 +14,12 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 def home():
     return jsonify({"message": "API is running!"}), 200
 
-@app.route("/upload_text", methods=["POST"])
+@app.route("/upload_text", methods=["POST", "OPTIONS"])
 def upload_text():
+    # 处理预检请求
+    if request.method == "OPTIONS":
+        return "", 200
+        
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
