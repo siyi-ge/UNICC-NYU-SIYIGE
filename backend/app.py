@@ -1,43 +1,42 @@
-import os
-import openai
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import openai
+import os
 
-# 创建 Flask 应用
 app = Flask(__name__)
-CORS(app)  # ✅ 允许跨域请求（CORS）
+CORS(app)  # 允许跨域请求
 
 # 读取 OpenAI API Key
-openai_client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # ✅ 新 API 方式
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/", methods=["GET"])
 def home():
-    """ 检查 API 是否正常运行 """
     return jsonify({"message": "API is running!"}), 200
 
 @app.route("/upload_text", methods=["POST"])
 def upload_text():
-    """ 处理文件上传并调用 OpenAI API 进行文本分析 """
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
     text_content = file.read().decode("utf-8")
 
-    # ✅ 调用 OpenAI API 进行文本分析
-    response = openai_client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": text_content}]
-    )
+    try:
+        # 调用 OpenAI API 处理文本
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "你是一个文本分析助手"},
+                {"role": "user", "content": text_content}
+            ]
+        )
 
-    # 提取 OpenAI 返回的数据
-    gpt_response = response.choices[0].message.content
+        gpt_response = response["choices"][0]["message"]["content"]
+        return jsonify({"keywords": gpt_response, "message": "Success"})
 
-    return jsonify({
-        "message": "文件上传成功",
-        "response": gpt_response
-    })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # ✅ Render 平台会自动替换 PORT
+    port = int(os.environ.get("PORT", 10000))  # 使用 Render 自动分配的端口
     app.run(host="0.0.0.0", port=port, debug=True)
