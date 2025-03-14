@@ -1,160 +1,44 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+import openai
 import os
-from openai import OpenAI
-import json
+from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # 允许前端访问
+CORS(app)  # 允许跨域请求
 
-# 初始化OpenAI客户端
-openai_api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=openai_api_key)
+# 确保 API key 来自环境变量
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-@app.route("/", methods=["GET"])
-def home():
-    return "多模态分析服务器运行成功！"
-
-@app.route("/upload_text", methods=["POST"])
+@app.route('/upload_text', methods=['POST'])
 def upload_text():
-    """处理文本分析"""
-    file = request.files.get("file")
-    if not file:
+    if 'file' not in request.files:
         return jsonify({"error": "没有文件上传"}), 400
-        
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "文件名为空"}), 400
+
     text_content = file.read().decode("utf-8")
-    
-    # 使用OpenAI API进行文本分析
+
+    # 调用 OpenAI API 进行文本分析
     try:
-        # 调用OpenAI API
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
             messages=[
-                {"role": "system", "content": "你是一个文本分析助手，请分析以下文本并以JSON格式返回关键词(keywords数组)、情感(sentiment字符串)、主题(topic字符串)和仇外评分(xenophobia_score数字0-10)"},
+                {"role": "system", "content": "你是一个文本分析助手，请提取关键词"},
                 {"role": "user", "content": text_content}
-            ],
-            temperature=0.3
+            ]
         )
-        
-        # 获取API返回的内容
-        content = response.choices[0].message.content
-        
-        # 尝试解析JSON
-        try:
-            analysis_result = json.loads(content)
-        except json.JSONDecodeError:
-            # 如果返回的不是有效JSON，进行手动解析
-            analysis_result = {
-                "keywords": extract_keywords(content),
-                "sentiment": extract_sentiment(content),
-                "topic": extract_topic(content),
-                "xenophobia_score": extract_xenophobia_score(content)
-            }
-        
-        return jsonify(analysis_result)
-        
+
+        gpt_response = response["choices"][0]["message"]["content"]
+
+        # 假设返回的内容是关键词列表，我们模拟解析
+        keywords = gpt_response.split()
+
+        return jsonify({"keywords": keywords})
+
     except Exception as e:
-        return jsonify({"error": f"处理失败: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
-@app.route("/upload_audio", methods=["POST"])
-def upload_audio():
-    """处理音频分析"""
-    file = request.files.get("file")
-    if not file:
-        return jsonify({"error": "没有文件上传"}), 400
-    
-    # 保存上传的音频文件
-    filename = file.filename
-    file_path = os.path.join('/tmp', filename)
-    file.save(file_path)
-    
-    try:
-        # 这里应该调用队友提供的音频分析API
-        # 示例结果（等待队友API完成后替换）
-        analysis_result = {
-            "emotion": "neutral",
-            "language": "Chinese",
-            "keywords": ["等待队友API"],
-            "confidence": 0.85
-        }
-        
-        return jsonify(analysis_result)
-        
-    except Exception as e:
-        return jsonify({"error": f"处理失败: {str(e)}"}), 500
-    finally:
-        # 删除临时文件
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
-@app.route("/upload_video", methods=["POST"])
-def upload_video():
-    """处理视频分析"""
-    file = request.files.get("file")
-    if not file:
-        return jsonify({"error": "没有文件上传"}), 400
-    
-    # 保存上传的视频文件
-    filename = file.filename
-    file_path = os.path.join('/tmp', filename)
-    file.save(file_path)
-    
-    try:
-        # 这里应该调用队友提供的视频分析API
-        # 示例结果（等待队友API完成后替换）
-        analysis_result = {
-            "objects": ["等待队友API"],
-            "scene_type": "等待队友API",
-            "emotions": ["等待队友API"],
-            "key_moments": [{"time": "00:00:00", "description": "等待队友API"}]
-        }
-        
-        return jsonify(analysis_result)
-        
-    except Exception as e:
-        return jsonify({"error": f"处理失败: {str(e)}"}), 500
-    finally:
-        # 删除临时文件
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
-# 辅助函数，用于从OpenAI返回的内容中提取信息
-def extract_keywords(content):
-    # 简单实现，实际中可能需要更复杂的解析
-    try:
-        if "关键词" in content:
-            keywords_text = content.split("关键词")[1].split("\n")[0]
-            keywords = [k.strip() for k in keywords_text.replace(":", "").replace("：", "").split(",")]
-            return keywords[:5]  # 限制返回5个关键词
-    except:
-        pass
-    return ["分析中"]
-
-def extract_sentiment(content):
-    sentiments = ["positive", "negative", "neutral"]
-    for sentiment in sentiments:
-        if sentiment in content.lower():
-            return sentiment
-    return "neutral"
-
-def extract_topic(content):
-    try:
-        if "主题" in content:
-            topic_text = content.split("主题")[1].split("\n")[0]
-            return topic_text.replace(":", "").replace("：", "").strip()
-    except:
-        pass
-    return "General"
-
-def extract_xenophobia_score(content):
-    try:
-        if "仇外评分" in content:
-            score_text = content.split("仇外评分")[1].split("\n")[0]
-            score = float(score_text.replace(":", "").replace("：", "").strip())
-            return min(10, max(0, score))  # 确保分数在0-10之间
-    except:
-        pass
-    return 0.0
-
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
