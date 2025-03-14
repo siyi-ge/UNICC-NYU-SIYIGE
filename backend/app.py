@@ -1,11 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-import requests
+from openai import OpenAI
 import json
 
 app = Flask(__name__)
 CORS(app)  # 允许前端访问
+
+# 初始化OpenAI客户端
+openai_api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=openai_api_key)
 
 @app.route("/", methods=["GET"])
 def home():
@@ -22,46 +26,30 @@ def upload_text():
     
     # 使用OpenAI API进行文本分析
     try:
-        # 确保设置了环境变量
-        openai_api_key = os.getenv("OPENAI_API_KEY")
-        if not openai_api_key:
-            return jsonify({"error": "未设置OpenAI API密钥"}), 500
-            
         # 调用OpenAI API
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {openai_api_key}"
-        }
-        
-        payload = {
-            "model": "gpt-4",
-            "messages": [
-                {"role": "system", "content": "你是一个文本分析助手，请分析以下文本并返回关键词、情感、主题和仇外评分（0-10）"},
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "你是一个文本分析助手，请分析以下文本并以JSON格式返回关键词(keywords数组)、情感(sentiment字符串)、主题(topic字符串)和仇外评分(xenophobia_score数字0-10)"},
                 {"role": "user", "content": text_content}
             ],
-            "temperature": 0.3
-        }
-        
-        response = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers=headers,
-            json=payload
+            temperature=0.3
         )
         
-        if response.status_code != 200:
-            return jsonify({"error": f"API请求失败: {response.text}"}), 500
-            
-        result = response.json()
-        content = result["choices"][0]["message"]["content"]
+        # 获取API返回的内容
+        content = response.choices[0].message.content
         
-        # 解析返回的内容
-        # 这里需要根据实际返回的格式进行调整
-        analysis_result = {
-            "keywords": extract_keywords(content),
-            "sentiment": extract_sentiment(content),
-            "topic": extract_topic(content),
-            "xenophobia_score": extract_xenophobia_score(content)
-        }
+        # 尝试解析JSON
+        try:
+            analysis_result = json.loads(content)
+        except json.JSONDecodeError:
+            # 如果返回的不是有效JSON，进行手动解析
+            analysis_result = {
+                "keywords": extract_keywords(content),
+                "sentiment": extract_sentiment(content),
+                "topic": extract_topic(content),
+                "xenophobia_score": extract_xenophobia_score(content)
+            }
         
         return jsonify(analysis_result)
         
