@@ -5,9 +5,8 @@ import openai
 
 app = Flask(__name__)
 
-# ✅ 允许所有来源访问 API，或者只允许你的前端访问
-CORS(app)  # 允许所有
-# CORS(app, origins=["https://siyi-ge.github.io"])  # 只允许 GitHub Pages 访问
+# ✅ 允许所有来源访问 API，或者指定你的 GitHub Pages
+CORS(app, origins=["https://siyi-ge.github.io"])
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
