@@ -4,19 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 文本分析工具</title>
-    <script defer src="script.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-cloud"></script>
 </head>
 <body>
     <h1>AI 文本分析工具</h1>
-    
     <input type="file" id="fileInput">
-    <button id="uploadButton">上传</button>
+    <button onclick="uploadFile()">上传并分析</button>
+    <svg width="600" height="400"></svg>
 
-    <h2>分析结果：</h2>
-    <p><strong>关键词:</strong> <span id="keywords">等待上传...</span></p>
-    <p><strong>情感分析:</strong> <span id="sentiment">等待上传...</span></p>
-    <p><strong>话题分类:</strong> <span id="topic">等待上传...</span></p>
-    <p><strong>仇外评分:</strong> <span id="xenophobia_score">等待上传...</span></p>
+    <script>
+        function uploadFile() {
+            let fileInput = document.getElementById("fileInput").files[0];
+            if (!fileInput) {
+                alert("请选择一个文件");
+                return;
+            }
 
+            let formData = new FormData();
+            formData.append("file", fileInput);
+
+            fetch("https://你的render服务.onrender.com/upload_text", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("错误: " + data.error);
+                } else {
+                    drawWordCloud(data.keywords);
+                }
+            })
+            .catch(error => console.error("请求失败:", error));
+        }
+
+        function drawWordCloud(words) {
+            let svg = d3.select("svg"),
+                width = +svg.attr("width"),
+                height = +svg.attr("height");
+
+            let layout = d3.layout.cloud()
+                .size([width, height])
+                .words(words.map(word => ({ text: word, size: 20 + Math.random() * 30 })))
+                .padding(5)
+                .rotate(() => ~~(Math.random() * 2) * 90)
+                .fontSize(d => d.size)
+                .on("end", draw);
+
+            layout.start();
+
+            function draw(words) {
+                svg.selectAll("*").remove();
+                svg.append("g")
+                    .attr("transform", `translate(${width / 2}, ${height / 2})`)
+                    .selectAll("text")
+                    .data(words)
+                    .enter().append("text")
+                    .style("font-size", d => d.size + "px")
+                    .style("fill", "black")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", d => `translate(${d.x}, ${d.y}) rotate(${d.rotate})`)
+                    .text(d => d.text);
+            }
+        }
+    </script>
 </body>
 </html>
